@@ -1,12 +1,14 @@
 # 概述
 
-​	本项目可以看作基于C++17的，对Muduo库部分核心网络组件的去Boost化重写
+​	本项目是基于C++17的，对Muduo库部分核心网络组件的去Boost化重写
 
 ​	项目框架是跟着施磊老师的手写C++ Muduo网络库项目课程所完成
 
 ​	跟写过程的课程笔记可以阅读[Muduo学习笔记.md](./MyMuduo学习笔记.md)
 
-​	随后本人将C++标准从课程的11提升到了17，并重写了一个较为简单的日志类，以及将std::bind尽数改造为lambda形式，且修正了课程代码的部分bug以及做了部分优化
+​	跟写完成后本人将C++标准从课程的11提升到了17，并重写了一个较为简单的日志类，以及将std::bind尽数改造为lambda形式，且修正了课程代码的部分bug以及做了部分优化
+
+​	该项目目前仅供学习使用，本人后续会基于该库尝试开发项目，随着项目开发对库进行修正或扩充
 
 
 
@@ -41,6 +43,113 @@
 ​	至此，一个简单的Server就已经启动完毕
 
 
+
+
+
+
+
+# 快速开始
+
+```
+//简单的Echo服务端
+#include <explore/TcpServer.h>
+#include <explore/Logger.h>
+
+#include <string>
+#include <functional>
+#include <signal.h>
+
+class EchoServer
+{
+public:
+    EchoServer(EventLoop *loop,
+               const InetAddress &addr,
+               const std::string name)
+        : server_(loop, addr, name),
+          loop_(loop),
+          exitStr_("quit")
+    {
+        // 注册回调函数
+        server_.setConnectionCallback([this](const TcpConnectionPtr &conn)
+                                      { onConnection(conn); });
+        server_.setMessageCallback([this](const TcpConnectionPtr &conn, Buffer *buf, Timestamp time)
+                                   { onMessage(conn, buf, time); });
+
+        // 设置合适的线程数量   subThread
+        server_.setThreadNum(7);
+    }
+
+    void start()
+    {
+        server_.start();
+    }
+
+private:
+    // 连接建立或断开的回调
+    void onConnection(const TcpConnectionPtr &conn)
+    {
+        if (conn->connected())
+        {
+            LOG_INFO("conn UP : %s\n", conn->peerAddress().toIpPort().c_str());
+        }
+        else
+        {
+            LOG_INFO("conn Down : %s\n", conn->peerAddress().toIpPort().c_str());
+        }
+    }
+
+    // 可读写事件回调
+    void onMessage(const TcpConnectionPtr &conn,
+                   Buffer *buf,
+                   Timestamp time)
+    {
+        std::string msg = buf->retrieveAllAsStringTrimmed();
+
+        LOG_INFO("receive message:%s", msg.c_str());
+
+        if (msg == exitStr_)
+            conn->shutdown();
+        else
+            conn->send(msg + "\n");
+    }
+
+    EventLoop *loop_;   // mainLoop
+    TcpServer server_;
+    std::string exitStr_;
+};
+
+int main(void)
+{
+    ::signal(SIGPIPE, SIG_IGN);
+
+    Logger::instance().setTerminal(false);
+    EventLoop loop;
+    InetAddress addr(8000);
+    EchoServer server(&loop, addr, "EchoServer-01"); // Acceptor non-blocking listenfd create bind
+    server.start();                                  // listen loopthread listenfd -> acceptChannel -> mainLoop -> newConnection
+    loop.loop();                                     // 启动mainLoop的底层Poller
+
+    return 0;
+}
+```
+
+编译命令（GCC）
+
+```
+g++ -o echoServer echoServer.cpp -lexplore -lpthread -g
+```
+
+运行
+
+```
+./echoServer
+```
+
+连接
+
+```
+terminal>telnet 127.0.0.1 8000
+```
 
 
 
@@ -83,3 +192,17 @@
 响应时间图：
 
 ![响应时间图](/home/breaking/Applications/config/Jmeter/testPlan/响应时间图.png)
+
+
+
+
+
+
+
+# 后续计划
+
+​	1、会基于Linux定时器补充Timer类，并基于此实现异步日志与监控线程（Monitor）
+
+​	2、基于llhttp库尝试扩展对http协议的支持
+
+​	3、扩充对IPV6的支持（待定）

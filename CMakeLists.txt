@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.11)
 project(explore)
 
 # 库最终编译成so动态库，设置动态库的路径,放在根目录的lib文件夹下面

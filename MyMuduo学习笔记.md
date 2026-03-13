@@ -8,13 +8,13 @@
 
 
 
-![img](/home/breaking/Pictures/muduo/reactor.png)
+![img](assets/reactor.png)
 
 ​													(上图源自网络)
 
 
 
-![Muduo](/home/breaking/Pictures/muduo/Muduo.png)
+![Muduo](assets/Muduo.png)
 
 # 概述
 

@@ -191,7 +191,7 @@ terminal>telnet 127.0.0.1 8000
 
 响应时间图：
 
-![响应时间图](/home/breaking/Applications/config/Jmeter/testPlan/响应时间图.png)
+![响应时间图](assets/响应时间图.png)
 
 
 

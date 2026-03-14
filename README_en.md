@@ -4,7 +4,7 @@
 
 This project is a reimplementation of part of the Muduo library's core network components with C++17, removing Boost dependencies.
 
-The project framework follows Prof. Shi Lei's hand-written C++ Muduo network library course.
+The project framework was initially inspired by Prof. Shi Lei's course on writing a C++ Muduo network library from scratch. 
 
 Notes taken during the course can be found in [MyMuduo学习笔记.md](./MyMuduo学习笔记.md).
 
@@ -86,17 +86,11 @@ private:
                    Buffer *buf,
                    Timestamp time)
     {
-        std::string msg = buf->retrieveAllAsStringTrimmed();
-
-        LOG_INFO("receive message:%s", msg.c_str());
-
-        if (msg == exitStr_)
-            conn->shutdown();
-        else
-            conn->send(msg + "\n");
+        conn->send(buf->peek(), buf->readableBytes());
+        buf->retrieveAll();
     }
 
-    EventLoop *loop_;   // mainLoop
+    EventLoop *loop_; // mainLoop
     TcpServer server_;
     std::string exitStr_;
 };
@@ -105,7 +99,11 @@ int main(void)
 {
     ::signal(SIGPIPE, SIG_IGN);
 
-    Logger::instance().setTerminal(false);
+    Logger::instance().setLevel(LogLevel::NONE);
+    // Logger::instance().setTerminal(false);
+    // Logger::instance().enableFileLog("echoServer");
+    // Logger::instance().setFastRefresh(true);
+
     EventLoop loop;
     InetAddress addr(8000);
     EchoServer server(&loop, addr, "EchoServer-01"); // Acceptor non-blocking listenfd create bind
@@ -119,7 +117,7 @@ int main(void)
 Compile command (GCC)
 
 ```bash
-g++ -o echoServer echoServer.cpp -lexplore -lpthread -g
+g++ -o echoServer echoServer.cpp -lexplore -lpthread -g -std=c++17
 ```
 
 Run
@@ -137,37 +135,64 @@ telnet 127.0.0.1 8000
 
 # Testing
 
-I created a simple EchoServer for stress testing. This server only sends "OK\n" upon receiving a message.
+I created a simple EchoServer for stress testing. This server echoes back received messages as-is.
 
 Test environment: i7-12700H (10 cores 20 threads), Ubuntu 22.04, JMeter 5.6.3
 
-JMeter test parameters: 10 threads, infinite loops, 600s test duration, two samplers. The Echo client sends a message ("hello,here is JMeter") to the server and then disconnects. The Exit client disconnects immediately after connecting. Connection reuse was not enabled for either.
-
 Server settings: Logging output disabled, 7 subThreads enabled
+
+Two types of tests were conducted:
+
+## 1. Long Connection Throughput Test
+
+JMeter test parameters: 12 threads, infinite loops, 60s test duration, connection reuse enabled, close connection disabled
 
 Test results are as follows:
 
 Aggregate Report:
 
-| Label     | # Samples | Average | Median | 90th Percentile | 95th Percentile | 99th Percentile | Min | Max | Error % | Throughput | Received KB/sec | Sent KB/sec |
-| --------- | --------- | ------- | ------ | --------------- | --------------- | --------------- | --- | --- | ------- | ---------- | --------------- | ----------- |
-| Test exit | 4560109   | 0       | 0      | 1               | 4               | 6               | 0   | 19  | 0.00%   | 7600.169   | 22.27           | 0           |
-| Test echo | 4560102   | 0       | 0      | 1               | 4               | 6               | 0   | 19  | 0.00%   | 7600.19533 | 22.27           | 0           |
-| Total     | 9120211   | 0       | 0      | 1               | 4               | 6               | 0   | 19  | 0.00%   | 15200.32633| 44.53           | 0           |
-
+| Label         | # Samples | Average | Median | 90th Percentile | 95th Percentile | 99th Percentile | Min | Max | Error % | Throughput  | Received KB/sec | Sent KB/sec |
+| ------------- | --------- | ------- | ------ | --------------- | --------------- | --------------- | --- | --- | ------- | ----------- | --------------- | ----------- |
+| Test LongConn | 8909511   | 0       | 0      | 0               | 1               | 1               | 0   | 21  | 0.00%   | 148486.9004 | 4785.22         | 0           |
+| Total         | 8909511   | 0       | 0      | 0               | 1               | 1               | 0   | 21  | 0.00%   | 148486.9004 | 4785.22         | 0           |
 
 Summary Report:
 
-| Label     | # Samples | Average | Min | Max | Std. Deviation | Error % | Throughput | Received KB/sec | Sent KB/sec | Avg. Bytes |
-| --------- | --------- | ------- | --- | --- | -------------- | ------- | ---------- | --------------- | ----------- | ---------- |
-| Test exit | 4560109   | 0       | 0   | 19  | 1.24           | 0.00%   | 7600.169   | 22.27           | 0           | 3          |
-| Test echo | 4560102   | 0       | 0   | 19  | 1.24           | 0.00%   | 7600.19533 | 22.27           | 0           | 3          |
-| Total     | 9120211   | 0       | 0   | 19  | 1.24           | 0.00%   | 15200.32633| 44.53           | 0           | 3          |
-
+| Label         | # Samples | Average | Min | Max | Std. Deviation | Error % | Throughput  | Received KB/sec | Sent KB/sec | Avg. Bytes |
+| ------------- | --------- | ------- | --- | --- | -------------- | ------- | ----------- | --------------- | ----------- | ---------- |
+| Test LongConn | 8909511   | 0       | 0   | 21  | 0.26           | 0.00%   | 148486.9004 | 4785.22         | 0           | 33         |
+| Total         | 8909511   | 0       | 0   | 21  | 0.26           | 0.00%   | 148486.9004 | 4785.22         | 0           | 33         |
 
 Response Time Graph:
 
-![Response Time Graph](assets/响应时间图.png)
+![Response Time Graph_long12_60](assets/响应时间图_long12_60.png)
+
+
+## 2. Short Connection Stability Test
+
+JMeter test parameters: 12 threads, infinite loops, 600s test duration, two samplers. The Echo client sends a message ("hello,here is JMeter") to the server and then disconnects. The Exit client disconnects immediately after connecting. Connection reuse was not enabled for either.
+
+Test results are as follows:
+
+Aggregate Report:
+
+| Label     | # Samples | Average | Median | 90th Percentile | 95th Percentile | 99th Percentile | Min | Max | Error % | Throughput  | Received KB/sec | Sent KB/sec |
+| --------- | --------- | ------- | ------ | --------------- | --------------- | --------------- | --- | --- | ------- | ----------- | --------------- | ----------- |
+| Test exit | 4634674   | 0       | 0      | 1               | 5               | 6               | 0   | 26  | 0.00%   | 7724.43092  | 7.54            | 0           |
+| Test echo | 4634669   | 0       | 0      | 1               | 5               | 6               | 0   | 22  | 0.00%   | 7724.43546  | 158.41          | 0           |
+| Total     | 9269343   | 0       | 0      | 1               | 5               | 6               | 0   | 26  | 0.00%   | 15448.82776 | 165.95          | 0           |
+
+Summary Report:
+
+| Label     | # Samples | Average | Min | Max | Std. Deviation | Error % | Throughput  | Received KB/sec | Sent KB/sec | Avg. Bytes |
+| --------- | --------- | ------- | --- | --- | -------------- | ------- | ----------- | --------------- | ----------- | ---------- |
+| Test exit | 4634674   | 0       | 0   | 26  | 1.41           | 0.00%   | 7724.43092  | 7.54            | 0           | 1          |
+| Test echo | 4634669   | 0       | 0   | 22  | 1.41           | 0.00%   | 7724.43546  | 158.41          | 0           | 21         |
+| Total     | 9269343   | 0       | 0   | 26  | 1.41           | 0.00%   | 15448.82776 | 165.95          | 0           | 11         |
+
+Response Time Graph:
+
+![Response Time Graph_short12_600](assets/响应时间图_short12_600.png)
 
 
 # Future Plans

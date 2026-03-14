@@ -17,7 +17,7 @@ void Socket::bindAddress(const InetAddress &Localaddr)
 {
     if (0 != bind(sockfd_, (sockaddr *)Localaddr.getSockAddr(), sizeof(sockaddr_in)))
     {
-        LOG_FATAL("bind sockfd:%d fail \n", sockfd_);
+        LOG_FATAL("bind sockfd:%d fail", sockfd_);
     }
 }
 
@@ -25,7 +25,7 @@ void Socket::listen()
 {
     if (0 != ::listen(sockfd_, SOMAXCONN))
     {
-        LOG_FATAL("listen sockfd:%d fail \n", sockfd_);
+        LOG_FATAL("listen sockfd:%d fail", sockfd_);
     }
 }
 int Socket::accept(InetAddress *peeraddr)

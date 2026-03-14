@@ -13,7 +13,7 @@ static EventLoop *CheckLoopNotNull(EventLoop *loop)
 {
     if (loop == nullptr)
     {
-        LOG_FATAL("%s:%s:%d mainLoop is null!\n", __FILE__, __FUNCTION__, __LINE__);
+        LOG_FATAL("%s:%s:%d mainLoop is null!", __FILE__, __FUNCTION__, __LINE__);
     }
     return loop;
 }
@@ -43,14 +43,14 @@ TcpConnection::TcpConnection(EventLoop *loop,
     channel_->setErrorCallBack([this]()
                                { handleError(); });
 
-    LOG_INFO("TcpConnection::ctor[%s] at fd=%d\n", name_.c_str(), sockfd);
+    LOG_INFO("TcpConnection::ctor[%s] at fd=%d", name_.c_str(), sockfd);
 
     socket_->setKeepAlive(true);
 }
 
 TcpConnection::~TcpConnection()
 {
-    LOG_INFO("TcpConnection::dtor[%s] at fd=%d state=%d\n", name_.c_str(), channel_->fd(), state_.load());
+    LOG_INFO("TcpConnection::dtor[%s] at fd=%d state=%d", name_.c_str(), channel_->fd(), state_.load());
 }
 
 void TcpConnection::handleRead(Timestamp receiveTime)
@@ -69,7 +69,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
     else
     {
         errno = saveErrno;
-        LOG_ERROR("TcpConnection::handleRead");
+        LOG_ERROR("TcpConnection::handleRead err:%d", errno);
         handleError();
     }
 }
@@ -104,14 +104,14 @@ void TcpConnection::handleWrite()
     }
     else
     {
-        LOG_ERROR("TcpConnection::handleWrite fd=%d is down, no more writing\n", channel_->fd());
+        LOG_ERROR("TcpConnection::handleWrite fd = %d is down, no more writing", channel_->fd());
     }
 }
 
 // poller -> channel::closeCallback -> TcpConnection::handleClose
 void TcpConnection::handleClose()
 {
-    LOG_INFO("TcpConnection::handleClose fd=%d state=%d\n", channel_->fd(), state_.load());
+    LOG_INFO("TcpConnection::handleClose fd=%d state=%d", channel_->fd(), state_.load());
     setState(kDisconnected);
     channel_->disableAll();
 
@@ -133,7 +133,7 @@ void TcpConnection::handleError()
     {
         err = optval;
     }
-    LOG_ERROR("TcpConnection::handleError name:%s - SO_ERROR:%d \n", name_.c_str(), err);
+    LOG_ERROR("TcpConnection::handleError name:%s - SO_ERROR:%d", name_.c_str(), err);
 }
 
 void TcpConnection::send(const std::string &buf)

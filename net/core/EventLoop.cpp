@@ -21,7 +21,7 @@ int createEventfd()
     int evtfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     if (evtfd < 0)
     {
-        LOG_FATAL("eventfd error:%d\n", errno);
+        LOG_FATAL("eventfd error:%d", errno);
     }
     return evtfd;
 }
@@ -35,10 +35,10 @@ EventLoop::EventLoop()
       wakeupFd_(createEventfd()),
       wakeupChannel_(new Channel(this, wakeupFd_))
 {
-    LOG_DEBUG("EventLoop created %p in thread %d\n", this, threadId_);
+    LOG_DEBUG("EventLoop created %p in thread %d", this, threadId_);
     if (t_loopInThisThread)
     {
-        LOG_FATAL("Another EventLoop %p exists in this thread %d\n", t_loopInThisThread, threadId_);
+        LOG_FATAL("Another EventLoop %p exists in this thread %d", t_loopInThisThread, threadId_);
     }
     else
     {
@@ -46,10 +46,9 @@ EventLoop::EventLoop()
     }
 
     // 设置wakeupfd的事件类型以及发生事件后的回调操作
-    wakeupChannel_->setReadCallBack([this](Timestamp){
-        handleRead();
-    });
-    
+    wakeupChannel_->setReadCallBack([this](Timestamp)
+                                    { handleRead(); });
+
     // 每一个EventLoop都将监听wakeupChannel的EPOLLIN读事件了
     wakeupChannel_->enableReading();
 }
@@ -68,7 +67,7 @@ void EventLoop::loop()
     looping_ = true;
     quit_ = false;
 
-    LOG_INFO("EventLoop %p start looping \n", this);
+    LOG_INFO("EventLoop %p start looping", this);
 
     while (!quit_)
     {
@@ -84,7 +83,7 @@ void EventLoop::loop()
         // mainLoop事先注册一个回调（由subLoop执行），待wakeup subLoop后，执行下面的回调，执行之前mainLoop注册的回调操作
         doPendingFunctors();
     }
-    LOG_INFO("EventLoop %p stop looping. \n", this);
+    LOG_INFO("EventLoop %p stop looping.", this);
     looping_ = false;
 }
 
@@ -143,7 +142,7 @@ void EventLoop::wakeup()
     ssize_t n = write(wakeupFd_, &one, sizeof(one));
     if (n != sizeof(one))
     {
-        LOG_ERROR("EventLoop::wakeup() writes %lu bytes instead of 8 \n", n);
+        LOG_ERROR("EventLoop::wakeup() writes %lu bytes instead of 8", n);
     }
 }
 void EventLoop::updateChannel(Channel *channel)

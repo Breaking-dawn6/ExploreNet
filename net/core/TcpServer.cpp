@@ -8,7 +8,7 @@ EventLoop *CheckLoopNotNull(EventLoop *loop)
 {
     if (loop == nullptr)
     {
-        LOG_FATAL("%s:%s:%d mainLoop is null! \n", __FILE__, __FUNCTION__, __LINE__);
+        LOG_FATAL("%s:%s:%d mainLoop is null!", __FILE__, __FUNCTION__, __LINE__);
     }
     return loop;
 }
@@ -68,7 +68,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress &peerAddr)
 
     ++nextConnId_;
     std::string connName = name_ + buf;
-    LOG_INFO("TcpServer::newConnection [%s] - new connection [%s] from %s\n",
+    LOG_INFO("TcpServer::newConnection [%s] - new connection [%s] from %s",
              name_.c_str(), connName.c_str(), peerAddr.toIpPort().c_str());
 
     // 通过sockfd获取其绑定的本机的ip地址和端口信息
@@ -114,7 +114,7 @@ void TcpServer::removeConnection(const TcpConnectionPtr &conn)
 
 void TcpServer::removeConnectionInLoop(const TcpConnectionPtr &conn)
 {
-    LOG_INFO("TcpServer::removeConnectionInLoop [%s] - connection %s\n", name_.c_str(), conn->name().c_str());
+    LOG_INFO("TcpServer::removeConnectionInLoop [%s] - connection %s", name_.c_str(), conn->name().c_str());
 
     connections_.erase(conn->name());
 
@@ -127,7 +127,7 @@ void TcpServer::setThreadNum(int numThreads)
 {
     if (numThreads < 0)
     {
-        LOG_WARN("numThreads must be greater than 0 , It has now been reset to 0.");
+        LOG_WARN("numThreads must be greater than or equal to 0 , It has now been reset to 0.");
     }
     threadPool_->setThreadNum(std::max(0, numThreads));
 }

@@ -39,7 +39,8 @@ public:
     bool connected() const { return state_ == kConnected; }
 
     void send(const std::string &buf); // 发送数据
-    void shutdown();                   // 关闭连接
+    void send(const void *data, size_t len);
+    void shutdown(); // 关闭连接
 
     void setConnectionCallback(const ConnectionCallback &cb)
     {
@@ -75,7 +76,7 @@ public:
     void setState(StateE state) { state_ = state; }
 
     const std::any &getContext() { return context_; }
-    std::any &getMutableContext(){return context_;}
+    std::any &getMutableContext() { return context_; }
 
     void setContext(std::any context) { context_ = context; }
 

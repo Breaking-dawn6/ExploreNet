@@ -149,6 +149,19 @@ void TcpConnection::send(const std::string &buf)
     }
 }
 
+void TcpConnection::send(const void *data, size_t len)
+{
+    if (loop_->isInLoopThread())
+    {
+        sendInLoop(data, len);
+    }
+    else
+    {
+        loop_->runInLoop([self = shared_from_this(), str = std::string(static_cast<const char *>(data), len)]()
+                         { self->sendInLoop(str.c_str(), str.size()); });
+    }
+}
+
 // 发送数据，应用写得快，而内核发送数据慢，需要把待发送数据写入缓冲区，而且设置了水位回调
 void TcpConnection::sendInLoop(const void *data, size_t len)
 {

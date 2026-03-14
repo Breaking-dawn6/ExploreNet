@@ -15,7 +15,8 @@ enum LogLevel
     INFO,
     WARN,
     ERROR,
-    FATAL
+    FATAL,
+    NONE
 };
 
 class Logger
@@ -23,6 +24,7 @@ class Logger
 public:
     static Logger &instance();
     void setLevel(LogLevel logLevel);
+    LogLevel getLevel();
     void log(LogLevel level, const char *format, ...);
     void enableFileLog(const std::string &filename);
     void setTerminal(bool flag);
@@ -38,17 +40,47 @@ private:
     std::atomic_bool fastRefresh_ = false;
 };
 
-#define LOG_DEBUG(format, ...) \
-    Logger::instance().log(LogLevel::DEBUG, format, ##__VA_ARGS__)
+#define LOG_DEBUG(format, ...)                                              \
+    do                                                                      \
+    {                                                                       \
+        if (Logger::instance().getLevel() <= LogLevel::DEBUG)               \
+        {                                                                   \
+            Logger::instance().log(LogLevel::DEBUG, format, ##__VA_ARGS__); \
+        }                                                                   \
+    } while (0);
 
-#define LOG_INFO(format, ...) \
-    Logger::instance().log(LogLevel::INFO, format, ##__VA_ARGS__)
+#define LOG_INFO(format, ...)                                              \
+    do                                                                     \
+    {                                                                      \
+        if (Logger::instance().getLevel() <= LogLevel::INFO)               \
+        {                                                                  \
+            Logger::instance().log(LogLevel::INFO, format, ##__VA_ARGS__); \
+        }                                                                  \
+    } while (0);
 
-#define LOG_WARN(format, ...) \
-    Logger::instance().log(LogLevel::WARN, format, ##__VA_ARGS__)
+#define LOG_WARN(format, ...)                                              \
+    do                                                                     \
+    {                                                                      \
+        if (Logger::instance().getLevel() <= LogLevel::WARN)               \
+        {                                                                  \
+            Logger::instance().log(LogLevel::WARN, format, ##__VA_ARGS__); \
+        }                                                                  \
+    } while (0);
 
-#define LOG_ERROR(format, ...) \
-    Logger::instance().log(LogLevel::ERROR, format, ##__VA_ARGS__)
+#define LOG_ERROR(format, ...)                                              \
+    do                                                                      \
+    {                                                                       \
+        if (Logger::instance().getLevel() <= LogLevel::ERROR)               \
+        {                                                                   \
+            Logger::instance().log(LogLevel::ERROR, format, ##__VA_ARGS__); \
+        }                                                                   \
+    } while (0);
 
-#define LOG_FATAL(format, ...) \
-    Logger::instance().log(LogLevel::FATAL, format, ##__VA_ARGS__)
+#define LOG_FATAL(format, ...)                                              \
+    do                                                                      \
+    {                                                                       \
+        if (Logger::instance().getLevel() <= LogLevel::FATAL)               \
+        {                                                                   \
+            Logger::instance().log(LogLevel::FATAL, format, ##__VA_ARGS__); \
+        }                                                                   \
+    } while (0);

@@ -11,6 +11,11 @@ void Logger::setLevel(LogLevel logLevel)
     logLevel_ = logLevel;
 }
 
+LogLevel Logger::getLevel()
+{
+    return logLevel_;
+}
+
 void Logger::log(LogLevel level, const char *format, ...)
 {
     if (level < logLevel_)

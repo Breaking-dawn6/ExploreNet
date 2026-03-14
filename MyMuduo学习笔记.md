@@ -5,6 +5,8 @@
 > 二、可以通过检索 NOTE 来获取笔记中标注的要点设计
 >
 > 三、该文档为本人跟随视频学习过程中所总结，在跟写结束后对库进行压测时修改了部分bug，因此现在部分代码可能与本文档不一致，请以实际代码为准
+>
+> 四、由于个人能力有限，无法保证所有理解都准确无误，如造成误导请谅解
 
 
 
@@ -18,9 +20,13 @@
 
 # 概述
 
-muduo库最重要的三个类：EventLoop、Channel、Poller
+​	muduo库最重要的三个类：EventLoop、Channel、Poller
 
-其中，一个线程对应一个EventLoop（即one loop per thread），一个EventLoop拥有一个ChannelList与一个Poller，而Poller下监听了多个Channel，这也是为什么ChannelList不能直接对Channel进行修改，需要传递给上层，上层再传递给Poller,Poller再传递给下层Channel进行处理
+​	其中，一个线程对应一个EventLoop（即one loop per thread），一个EventLoop拥有一个activeChannels与一个Poller，而Poller下监听了多个Channel。因此，channel只认识EventLoop,而不认识poller。
+
+​	当需要对channel所感兴趣的事件进行修改时，需要传递给EventLoop，loop若确认当前在本线程则直接传递给Poller，否则将修改操作封装并放到loop的任务队列中，等待下一轮loop循环再传递给Poller。Poller收到任务后对相应channel的监听事件做修改。
+
+​	EventLoop在loop主循环中，调用poller的poll函数开始阻塞等待事件发生，此时poll函数内部会调用epoll_wait。当发生事件时，poller从epoll_wait返回，随后将监听到的事件填写到EventLoop中的activeChannels中，EventLoop从poll返回后遍历activeChannels进行下一步的处理
 
 
 
@@ -36,23 +42,49 @@ muduo库最重要的三个类：EventLoop、Channel、Poller
 
 ​	1、单例模式
 
-​	2、定义了INFO、ERROR、FATAL、DEBUG四个级别的宏
+​	2、有DEBUG、INFO、WARN、ERROR、FATAL五个级别
+
+​	3、定义了LOG_DEBUG、LOG_INFO、LOG_WARN、LOG_ERROR、LOG_FATAL五个宏，外部可以直接使用宏传入C风格带参字符串写日志
 
 ## 成员函数
 
 ### 	1、static Logger &instance()
 
-​			在单例模式中，获取日志唯一对象，初次调用该函数时，static局部变量在第一次调用instance（）时被初始化，且只初始化一次。之后的调用会直接返回该静态变量的引用，static确保之后所有调用都返回同一个对象（C++11 保证了局部静态变量初始化的线程安全性）。
+​	在单例模式中，获取日志唯一对象，初次调用该函数时，static局部变量在第一次调用instance（）时被初始化，且只初始化一次。之后的调用会直接返回该静态变量的引用，static确保之后所有调用都返回同一个对象（C++11 保证了局部静态变量初始化的线程安全性）。
 
 ### 	2、私有构造函数
 
-​			确保外部代码无法直接创建logger类，从而达到限制多个实例产生的目的。
+​	确保外部代码无法直接创建logger类，从而达到限制多个实例产生的目的。
+
+### 3、void log(LogLevel level, const char *format, ...)
+
+​	适配C风格的带参字符串输入，使得外部可以通过类似调用printf的方式调用日志
+
+
 
 ## 成员变量
 
 ### 	1、int logLevel_
 
-​			日志级别
+​	日志级别，默认为INFO
+
+### 2、std::mutex mutex_
+
+​	互斥锁，保护日志写入	
+
+### 3、std::ofstream logFile_
+
+​	日志文件指针，指定存储日志的文件
+
+### 4、std::atomic_bool enableTerminal_
+
+​	是否启用控制台输出，默认true
+
+### 5、std::atomic_bool fastRefresh_
+
+​	是否启用快速刷新日志，默认false
+
+
 
 
 
@@ -112,15 +144,15 @@ muduo库最重要的三个类：EventLoop、Channel、Poller
 
 ### 	1、std::string toIP() const
 
-​			将类成员addr_通过C标准库inet.h提供的方法转换为 ip地址 形式，通过char数组返回
+​			将类成员addr_通过C标准库inet.h提供的方法转换为 ip地址 形式
 
 ### 	2、std::string toIpPort() const
 
-​			将类成员addr_通过C标准库inet.h提供的方法转换为 ip地址:端口 形式，通过char数组返回
+​			将类成员addr_通过C标准库inet.h提供的方法转换为 ip地址:端口 形式
 
 ### 	3、uint16_t toPort() const
 
-​			将类成员addr_通过C标准库inet.h提供的方法转换为 端口 形式，通过uint16_t
+​			将类成员addr_通过C标准库inet.h提供的方法转换为 端口 形式
 
 ### 	4、const sockaddr_in *getSockAddr() const
 

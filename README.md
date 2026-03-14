@@ -1,3 +1,5 @@
+<center><a href="README.md">简体中文</a> | <a href="README_en.md">English</a></center>
+
 # 概述
 
 ​	本项目是基于C++17的，对Muduo库部分核心网络组件的去Boost化重写
@@ -6,7 +8,7 @@
 
 ​	跟写过程的课程笔记可以阅读[Muduo学习笔记.md](./MyMuduo学习笔记.md)
 
-​	跟写完成后本人将C++标准从课程的11提升到了17，并重写了一个较为简单的日志类，以及将std::bind尽数改造为lambda形式，且修正了课程代码的部分bug以及做了部分优化
+​	跟写完成后本人将C++标准从课程的11提升到了17，并重写了一个日志类，以及将std::bind尽数改造为lambda形式，且修正了课程代码在高并发下的bug以及做了部分优化
 
 ​	该项目目前仅供学习使用，本人后续会基于该库尝试开发项目，随着项目开发对库进行修正或扩充
 
@@ -50,7 +52,7 @@
 
 # 快速开始
 
-```
+```cpp
 //简单的Echo服务端
 #include <explore/TcpServer.h>
 #include <explore/Logger.h>
@@ -135,20 +137,20 @@ int main(void)
 
 编译命令（GCC）
 
-```
+```bash
 g++ -o echoServer echoServer.cpp -lexplore -lpthread -g
 ```
 
 运行
 
-```
+```bash
 ./echoServer
 ```
 
 连接
 
-```
-terminal>telnet 127.0.0.1 8000
+```bash
+telnet 127.0.0.1 8000
 ```
 
 
@@ -157,7 +159,7 @@ terminal>telnet 127.0.0.1 8000
 
 # 测试
 
-​	本人创建了一个简单的EchoServer进行了压测，该server只会在收到消息后会送OK！
+​	本人创建了一个简单的EchoServer进行了压测，该server只会在收到消息后回送 "OK\n"
 
 ​	测试环境：i7-12700H(10核20线程)、ubuntu22.04、JMeter5.6.3
 

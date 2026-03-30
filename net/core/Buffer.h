@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <string.h>
 #include <algorithm>
 
 // 网络库底层的缓冲区类型定义
@@ -101,6 +102,15 @@ public:
     {
         ensureWritableBytes(len);
         std::copy(data, data + len, beginWrite());
+        writeIndex_ += len;
+    }
+
+    // 把data数据添加到缓冲区中
+    void append(const std::string &data)
+    {
+        size_t len = data.length();
+        ensureWritableBytes(len);
+        memcpy(beginWrite(), data.c_str(), len);
         writeIndex_ += len;
     }
 

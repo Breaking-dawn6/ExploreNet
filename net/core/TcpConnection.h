@@ -40,6 +40,7 @@ public:
 
     void send(const std::string &buf); // 发送数据
     void send(const void *data, size_t len);
+    void send(Buffer *buf);
     void shutdown(); // 关闭连接
 
     void setConnectionCallback(const ConnectionCallback &cb)

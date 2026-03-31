@@ -6,7 +6,7 @@
 
 ​	项目框架是跟着施磊老师的手写C++ Muduo网络库项目课程所完成
 
-​	跟写过程的课程笔记可以阅读[Muduo学习笔记.md](./MyMuduo学习笔记.md)
+​	跟写过程的课程笔记可以阅读[Muduo学习笔记.md](./assets/docs/MyMuduo学习笔记.md)
 
 ​	跟写完成后本人将C++标准从课程的11提升到了17，并重写了一个日志类，以及将std::bind尽数改造为lambda形式，且修正了课程代码在高并发下的bug以及做了部分优化
 
@@ -20,7 +20,17 @@
 
 # 构建
 
-​	在explore目录下运行autobuild.sh文件即可，脚本会将编译获得的动态库拷贝到/usr/lib下，会将项目所有头文件拷贝到/usr/include/explore下
+​	项目目前有一个构建脚本autobuild.sh，该脚本最多接受一个参数
+
+​	1、autobuild.sh ON 或 autobuild.sh
+
+​	此构建方式将全量构建项目，包括HTTP服务器
+
+​	2、autobuild.sh OFF
+
+​	此构建方式将仅构建项目的核心网络模块，排除HTTP等拓展
+
+​	两种构建方式下，脚本均会将编译获得的动态库拷贝到/usr/lib下，会将项目所有头文件拷贝到/usr/include/explore下
 
 
 
@@ -187,7 +197,7 @@ telnet 127.0.0.1 8000
 
 响应时间图：
 
-![响应时间图_long12_60](assets/响应时间图_long12_60.png)
+![响应时间图_long12_60](assets/picture/响应时间图_long12_60.png)
 
 
 
@@ -215,9 +225,19 @@ telnet 127.0.0.1 8000
 
 响应时间图：
 
-![响应时间图_short12_600](assets/响应时间图_short12_600.png)
+![响应时间图_short12_600](assets/picture/响应时间图_short12_600.png)
 
 
+
+
+
+
+
+# 协议支持
+
+## 1、HTTP支持
+
+​	详细可阅读[HTTP.md](./assets/docs/HTTP.md)
 
 
 
@@ -227,6 +247,6 @@ telnet 127.0.0.1 8000
 
 ​	1、会基于Linux定时器补充Timer类，并基于此实现异步日志与监控线程（Monitor）
 
-​	2、基于llhttp库尝试扩展对http协议的支持
+​	2、基于llhttp库尝试扩展对http协议的支持（初步完成）
 
 ​	3、扩充对IPV6的支持（待定）

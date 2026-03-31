@@ -6,7 +6,7 @@ This project is a reimplementation of part of the Muduo library's core network c
 
 The project framework was initially inspired by Prof. Shi Lei's course on writing a C++ Muduo network library from scratch. 
 
-Notes taken during the course can be found in [MyMuduo学习笔记.md](./MyMuduo学习笔记.md).
+Notes taken during the course can be found in [MyMuduo学习笔记.md](./assets/docs/MyMuduo学习笔记.md).
 
 After completing the course, I upgraded the C++ standard from C++11 to C++17, rewrote a logging class, converted all `std::bind` to lambda expressions, fixed bugs in the course code under high concurrency scenarios, and made some optimizations.
 
@@ -15,7 +15,17 @@ This project is currently for learning purposes only. I plan to develop projects
 
 # Build
 
-Run the `autobuild.sh` script in the explore directory. The script will copy the compiled dynamic libraries to `/usr/lib` and copy all project headers to `/usr/include/explore`.
+The project currently has a build script `autobuild.sh` that accepts at most one argument.
+
+1. `autobuild.sh ON` or `autobuild.sh`
+
+   This build method will build the entire project, including the HTTP server.
+
+2. `autobuild.sh OFF`
+
+   This build method will only build the core network modules of the project, excluding HTTP and other extensions.
+
+In both build modes, the script will copy the compiled dynamic libraries to `/usr/lib` and copy all project header files to `/usr/include/explore`.
 
 
 # Usage
@@ -165,7 +175,7 @@ Summary Report:
 
 Response Time Graph:
 
-![Response Time Graph_long12_60](assets/响应时间图_long12_60.png)
+![Response Time Graph_long12_60](assets/picture/响应时间图_long12_60.png)
 
 
 ## 2. Short Connection Stability Test
@@ -192,13 +202,22 @@ Summary Report:
 
 Response Time Graph:
 
-![Response Time Graph_short12_600](assets/响应时间图_short12_600.png)
+![Response Time Graph_short12_600](assets/picture/响应时间图_short12_600.png)
+
+
+# Protocol Support
+
+## 1. HTTP Support
+
+For details, see [HTTP_en.md](./assets/docs/HTTP_en.md)
+
+
 
 
 # Future Plans
 
 1. Implement a Timer class based on the Linux timer, and use it to implement asynchronous logging and a monitoring thread (Monitor)
 
-2. Attempt to extend HTTP protocol support based on the llhttp library
+2. Extend HTTP protocol support based on the llhttp library (preliminary completion)
 
 3. Expand IPv6 support (TBD)

@@ -10,13 +10,13 @@
 
 
 
-![img](assets/reactor.png)
+![img](../picture/reactor.png)
 
 ​													(上图源自网络)
 
 
 
-![Muduo](assets/Muduo.png)
+![Muduo](../picture/Muduo.png)
 
 # 概述
 

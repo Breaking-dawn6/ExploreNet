@@ -17,7 +17,7 @@ The usage of HttpServer is similar to TcpServer overall.
 
 2. Create an InetAddress and bind the port number
 
-3. Create an HttpServer and initialize it with the above two variables, register your own request handler function
+3. Create an HttpServer and initialize it with the above two variables, register your own request path handler functions to the server (currently only supports GET and POST), as well as an optional default handler function
 
 4. Call the HttpServer's start function
 
@@ -34,20 +34,30 @@ At this point, the HttpServer is ready. When new requests arrive and are parsed,
 #include <signal.h>
 
 #include <explore/HttpServer.h>
+#include <explore/Logger.h>
 
-void requestAcceptor(const TcpConnectionPtr &conn, const HttpRequest req)
+void helloHandler(HttpRequest request, HttpResponse &response)
 {
-    // Build a simple HTTP response
-    HttpResponse response;
-
-    response.setBody("<h1>Hello from C++17 Network Library!</h1><p>You requested: " + req.url + "</p>");
+    response.setBody("<h1>Hello from C++17 Network Library!</h1><p>You requested: " + request.url + "</p>");
     response.setVersion("HTTP/1.1");
     response.setStatusCode(HttpStatusCode::k200OK);
     response.setStatusMessage("Content-Type: text/html");
+}
 
-    Buffer buf;
-    response.writeToBuffer(&buf);
-    conn->send(&buf);
+void exploreHandler(HttpRequest request, HttpResponse &response)
+{
+    response.setBody("<h1>This is ExploreNet's world!</h1><p>You requested: " + request.url + "</p>");
+    response.setVersion("HTTP/1.1");
+    response.setStatusCode(HttpStatusCode::k200OK);
+    response.setStatusMessage("Content-Type: text/html");
+}
+
+void defaultHandler(HttpRequest request, HttpResponse &response)
+{
+    response.setBody("<h1>Sorry, the path you requested is invalid.</h1><p>You requested: " + request.url + "</p>");
+    response.setVersion("HTTP/1.1");
+    response.setStatusCode(HttpStatusCode::k200OK);
+    response.setStatusMessage("Content-Type: text/html");
 }
 
 int main()
@@ -61,8 +71,10 @@ int main()
 
     HttpServer server(&loop, addr);
 
-    server.setRequestAcceptor(requestAcceptor);
-  
+    server.GET("/hello", helloHandler);
+    server.GET("/Explore", exploreHandler);
+    server.setDefaultHandler(defaultHandler);
+
     server.setThreadNum(7);
 
     server.start();
@@ -91,15 +103,15 @@ Aggregate Report:
 
 | Label    | # Samples | Average | Median | 90th Percentile | 95th Percentile | 99th Percentile | Min | Max | Error % | Throughput  | Received KB/sec | Sent KB/sec |
 | -------- | --------- | ------- | ------ | --------------- | --------------- | --------------- | --- | --- | ------- | ----------- | --------------- | ----------- |
-| HTTP请求 | 5694963   | 0       | 0      | 1               | 1               | 1               | 0   | 75  | 0.00%   | 95123.73683 | 14305.72        | 11240.21    |
-| Total    | 5694963   | 0       | 0      | 1               | 1               | 1               | 0   | 75  | 0.00%   | 95123.73683 | 14305.72        | 11240.21    |
+| HTTP请求 | 5804974   | 0       | 0      | 1               | 1               | 1               | 0   | 12  | 0.00%   | 96726.99703 | 14735.75        | 11555.6     |
+| Total    | 5804974   | 0       | 0      | 1               | 1               | 1               | 0   | 12  | 0.00%   | 96726.99703 | 14735.75        | 11555.6     |
 
 Summary Report:
 
 | Label    | # Samples | Average | Min | Max | Std. Deviation | Error % | Throughput  | Received KB/sec | Sent KB/sec | Avg. Bytes |
 | -------- | --------- | ------- | --- | --- | -------------- | ------- | ----------- | --------------- | ----------- | ---------- |
-| HTTP请求 | 5694963   | 0       | 0   | 75  | 0.46           | 0.00%   | 95123.73683 | 14305.72        | 11240.21    | 154        |
-| Total    | 5694963   | 0       | 0   | 75  | 0.46           | 0.00%   | 95123.73683 | 14305.72        | 11240.21    | 154        |
+| HTTP请求 | 5804974   | 0       | 0   | 12  | 0.41           | 0.00%   | 96726.99703 | 14735.75        | 11555.6     | 156        |
+| Total    | 5804974   | 0       | 0   | 12  | 0.41           | 0.00%   | 96726.99703 | 14735.75        | 11555.6     | 156        |
 
 Response Time Graph:
 

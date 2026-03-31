@@ -3,7 +3,8 @@
 
 HttpResponse::HttpResponse()
     : closeConnection_(false),
-      statusCode_(HttpStatusCode::kUnknown)
+      statusCode_(HttpStatusCode::kUnknown),
+      version_("HTTP/1.1")
 {
 }
 

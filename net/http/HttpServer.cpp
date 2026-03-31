@@ -40,8 +40,15 @@ void HttpServer::onMessage(const TcpConnectionPtr &conn, Buffer *buf, Timestamp 
 
     if (context->isComplete())
     {
-        if (requestAcceptor_)
-            requestAcceptor_(conn, std::move(context->request()));
-        context.reset();
+        // if (requestAcceptor_)
+        //     requestAcceptor_(conn, std::move(context->request()));
+        HttpResponse response = HttpResponse();
+        router_.execute(std::move(context->request()), response);
+
+        Buffer buf;
+        response.writeToBuffer(&buf);
+        conn->send(&buf);
+        
+        context->reset();
     }
 }

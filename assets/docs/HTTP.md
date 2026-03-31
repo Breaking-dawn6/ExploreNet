@@ -18,7 +18,7 @@ llhttp项目地址：https://github.com/nodejs/llhttp
 
 ​	二、创建一个InetAddress并绑定端口号
 
-​	三、创建HttpServer并使用上述两个变量将其初始化，注册你自己的请求分发函数
+​	三、创建HttpServer并使用上述两个变量将其初始化，向server注册你自己的请求路径业务函数（目前仅支持GET与POST），以及可选的默认业务处理函数
 
 ​	四、调用HttpServer的start函数
 
@@ -38,20 +38,30 @@ llhttp项目地址：https://github.com/nodejs/llhttp
 #include <signal.h>
 
 #include <explore/HttpServer.h>
+#include <explore/Logger.h>
 
-void requestAcceptor(const TcpConnectionPtr &conn, const HttpRequest req)
+void helloHandler(HttpRequest request, HttpResponse &response)
 {
-    // 构建简单的 HTTP 响应
-    HttpResponse response;
-
-    response.setBody("<h1>Hello from C++17 Network Library!</h1><p>You requested: " + req.url + "</p>");
+    response.setBody("<h1>Hello from C++17 Network Library!</h1><p>You requested: " + request.url + "</p>");
     response.setVersion("HTTP/1.1");
     response.setStatusCode(HttpStatusCode::k200OK);
     response.setStatusMessage("Content-Type: text/html");
+}
 
-    Buffer buf;
-    response.writeToBuffer(&buf);
-    conn->send(&buf);
+void exploreHandler(HttpRequest request, HttpResponse &response)
+{
+    response.setBody("<h1>This is ExploreNet's world!</h1><p>You requested: " + request.url + "</p>");
+    response.setVersion("HTTP/1.1");
+    response.setStatusCode(HttpStatusCode::k200OK);
+    response.setStatusMessage("Content-Type: text/html");
+}
+
+void defaultHandler(HttpRequest request, HttpResponse &response)
+{
+    response.setBody("<h1>Sorry, the path you requested is invalid.</h1><p>You requested: " + request.url + "</p>");
+    response.setVersion("HTTP/1.1");
+    response.setStatusCode(HttpStatusCode::k200OK);
+    response.setStatusMessage("Content-Type: text/html");
 }
 
 int main()
@@ -65,8 +75,10 @@ int main()
 
     HttpServer server(&loop, addr);
 
-    server.setRequestAcceptor(requestAcceptor);
-  
+    server.GET("/hello", helloHandler);
+    server.GET("/Explore", exploreHandler);
+    server.setDefaultHandler(defaultHandler);
+
     server.setThreadNum(7);
 
     server.start();
@@ -98,15 +110,15 @@ int main()
 
 | Label    | # 样本  | 平均值 | 中位数 | 90% 百分位 | 95% 百分位 | 99% 百分位 | 最小值 | 最大值 | 异常 % | 吞吐量      | 接收 KB/sec | 发送 KB/sec |
 | -------- | ------- | ------ | ------ | ---------- | ---------- | ---------- | ------ | ------ | ------ | ----------- | ----------- | ----------- |
-| HTTP请求 | 5694963 | 0      | 0      | 1          | 1          | 1          | 0      | 75     | 0.00%  | 95123.73683 | 14305.72    | 11240.21    |
-| 总体     | 5694963 | 0      | 0      | 1          | 1          | 1          | 0      | 75     | 0.00%  | 95123.73683 | 14305.72    | 11240.21    |
+| HTTP请求 | 5804974 | 0      | 0      | 1          | 1          | 1          | 0      | 12     | 0.00%  | 96726.99703 | 14735.75    | 11555.6     |
+| 总体     | 5804974 | 0      | 0      | 1          | 1          | 1          | 0      | 12     | 0.00%  | 96726.99703 | 14735.75    | 11555.6     |
 
 汇总报告：
 
 | Label    | # 样本  | 平均值 | 最小值 | 最大值 | 标准偏差 | 异常 % | 吞吐量      | 接收 KB/sec | 发送 KB/sec | 平均字节数 |
 | -------- | ------- | ------ | ------ | ------ | -------- | ------ | ----------- | ----------- | ----------- | ---------- |
-| HTTP请求 | 5694963 | 0      | 0      | 75     | 0.46     | 0.00%  | 95123.73683 | 14305.72    | 11240.21    | 154        |
-| 总体     | 5694963 | 0      | 0      | 75     | 0.46     | 0.00%  | 95123.73683 | 14305.72    | 11240.21    | 154        |
+| HTTP请求 | 5804974 | 0      | 0      | 12     | 0.41     | 0.00%  | 96726.99703 | 14735.75    | 11555.6     | 156        |
+| 总体     | 5804974 | 0      | 0      | 12     | 0.41     | 0.00%  | 96726.99703 | 14735.75    | 11555.6     | 156        |
 
 响应时间图：
 

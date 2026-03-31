@@ -19,7 +19,7 @@ The project currently has a build script `autobuild.sh` that accepts at most one
 
 1. `autobuild.sh ON` or `autobuild.sh`
 
-   This build method will build the entire project, including the HTTP server.
+   This build method will build the entire project, including the HTTP server. Before building, ensure that llhttp headers are in `/usr/local/include` and llhttp dynamic libraries are in `/usr/local/lib`.
 
 2. `autobuild.sh OFF`
 

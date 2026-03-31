@@ -1,6 +1,5 @@
 #include "HttpResponse.h"
-
-#include <explore/Buffer.h>
+#include "Buffer.h"
 
 HttpResponse::HttpResponse()
     : closeConnection_(false),

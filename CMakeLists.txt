@@ -22,8 +22,36 @@ file(GLOB_RECURSE SRC_LIST
 
 # 根据选项决定是否包含HTTP模块
 if(BUILD_HTTP_MODULE)
+    # 优先查找本地llhttp
+    find_path(LLHTTP_INCLUDE_DIR llhttp.h
+        PATHS /usr/local/include
+        PATH_SUFFIXES llhttp
+    )
+    
+    find_library(LLHTTP_LIBRARY 
+        NAMES llhttp libllhttp
+        PATHS /usr/local/lib
+    )
+    
+    if(LLHTTP_INCLUDE_DIR AND LLHTTP_LIBRARY)
+        message(STATUS "Found local llhttp: ${LLHTTP_LIBRARY}")
+        include_directories(${LLHTTP_INCLUDE_DIR})
+        set(LLHTTP_FOUND TRUE)
+    else()
+        message(STATUS "llhttp not found locally, fetching from GitHub...")
+        include(FetchContent)
+        
+        FetchContent_Declare(
+            llhttp
+            GIT_REPOSITORY https://github.com/nodejs/llhttp.git
+            GIT_TAG release/v9.2.1
+        )
+        
+        FetchContent_MakeAvailable(llhttp)
+        set(LLHTTP_FOUND TRUE)
+    endif()
+    
     include_directories(${PROJECT_SOURCE_DIR}/net/http)
-    include_directories(${PROJECT_SOURCE_DIR}/net/http/ThirdLib/llhttp/include)
     file(GLOB_RECURSE HTTP_SRC_LIST "${PROJECT_SOURCE_DIR}/net/http/*.cpp")
     list(APPEND SRC_LIST ${HTTP_SRC_LIST})
 endif()
@@ -33,5 +61,9 @@ add_library(explore SHARED ${SRC_LIST})
 
 # 根据选项链接HTTP依赖库
 if(BUILD_HTTP_MODULE)
-    target_link_libraries(explore ${PROJECT_SOURCE_DIR}/net/http/ThirdLib/llhttp/lib/libllhttp.a)
+    if(LLHTTP_INCLUDE_DIR AND LLHTTP_LIBRARY)
+        target_link_libraries(explore ${LLHTTP_LIBRARY})
+    else()
+        target_link_libraries(explore llhttp)
+    endif()
 endif()

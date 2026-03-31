@@ -24,7 +24,7 @@
 
 ​	1、autobuild.sh ON 或 autobuild.sh
 
-​	此构建方式将全量构建项目，包括HTTP服务器
+​	此构建方式将全量构建项目，包括HTTP服务器，构建前请确保 `/usr/local/include` 下有llhttp的头文件以及 `/usr/local/lib` 下有llhttp的动态链接库
 
 ​	2、autobuild.sh OFF
 

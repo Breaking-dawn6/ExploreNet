@@ -30,7 +30,7 @@ Acceptor::Acceptor(EventLoop *loop, const InetAddress &listenAddr, bool reusepor
     acceptSocket_.setReusePort(reuseport);
     acceptSocket_.bindAddress(listenAddr); // bind
     // TcpServer::start() Acceptor.listen    有新用户连接，要执行回调(connfd => channel => subLoop)
-    acceptChannel_.setReadCallBack([this](Timestamp){
+    acceptChannel_.setReadCallback([this](Timestamp){
         handleRead();
     });
 }

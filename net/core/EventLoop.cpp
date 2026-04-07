@@ -33,7 +33,8 @@ EventLoop::EventLoop()
       threadId_(CurrentThread::tid()),
       poller_(Poller::newDefaultPoller(this)),
       wakeupFd_(createEventfd()),
-      wakeupChannel_(new Channel(this, wakeupFd_))
+      wakeupChannel_(new Channel(this, wakeupFd_)),
+      timer_(new Timer(this))
 {
     LOG_DEBUG("EventLoop created %p in thread %d", this, threadId_);
     if (t_loopInThisThread)
@@ -46,7 +47,7 @@ EventLoop::EventLoop()
     }
 
     // 设置wakeupfd的事件类型以及发生事件后的回调操作
-    wakeupChannel_->setReadCallBack([this](Timestamp)
+    wakeupChannel_->setReadCallback([this](Timestamp)
                                     { handleRead(); });
 
     // 每一个EventLoop都将监听wakeupChannel的EPOLLIN读事件了
@@ -174,4 +175,26 @@ void EventLoop::doPendingFunctors()
     }
 
     callingPendingFunctors_ = false;
+}
+
+TimerNodeId EventLoop::runAt(Timestamp time, TimerCallback cb)
+{
+    return timer_->addTimer(time, std::move(cb));
+}
+
+// 在delay秒后执行回调
+TimerNodeId EventLoop::runAfter(double delay, TimerCallback cb)
+{
+    return timer_->addTimer(Timestamp::systemRunTime() + delay, std::move(cb));
+}
+
+// 每隔interval秒执行回调
+TimerNodeId EventLoop::runEvery(double interval, TimerCallback cb)
+{
+    return timer_->addTimer(Timestamp::systemRunTime() + interval, std::move(cb), interval);
+}
+
+void EventLoop::cancelTimer(TimerNodeId timerId)
+{
+    timer_->delTimer(timerId);
 }

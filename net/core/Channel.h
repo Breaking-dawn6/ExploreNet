@@ -27,10 +27,10 @@ public:
     void handleEvent(Timestamp receiveTime);
 
     // 设置回调函数对象
-    void setReadCallBack(ReadEventCallBack cb) { readCallBack_ = std::move(cb); }
-    void setWriteCallBack(EventCallBack cb) { writeCallBack_ = std::move(cb); }
-    void setCloseCallBack(EventCallBack cb) { closeCallBack_ = std::move(cb); }
-    void setErrorCallBack(EventCallBack cb) { errorCallBack_ = std::move(cb); }
+    void setReadCallback(ReadEventCallBack cb) { readCallBack_ = std::move(cb); }
+    void setWriteCallback(EventCallBack cb) { writeCallBack_ = std::move(cb); }
+    void setCloseCallback(EventCallBack cb) { closeCallBack_ = std::move(cb); }
+    void setErrorCallback(EventCallBack cb) { errorCallBack_ = std::move(cb); }
 
     // 防止channel被手动remove掉，channel还在执行回调操作
     void tie(const std::shared_ptr<void> &);

@@ -34,13 +34,13 @@ TcpConnection::TcpConnection(EventLoop *loop,
       highWaterMark_(64 * 1024 * 1024) // 64MB
 {
     // 下面给channel设置相应的回调函数，poller给channel通知感兴趣的事件发生了，channel会回调相应的操作函数
-    channel_->setReadCallBack([this](Timestamp time)
+    channel_->setReadCallback([this](Timestamp time)
                               { handleRead(time); });
-    channel_->setWriteCallBack([this]()
+    channel_->setWriteCallback([this]()
                                { handleWrite(); });
-    channel_->setCloseCallBack([this]()
+    channel_->setCloseCallback([this]()
                                { handleClose(); });
-    channel_->setErrorCallBack([this]()
+    channel_->setErrorCallback([this]()
                                { handleError(); });
 
     LOG_INFO("TcpConnection::ctor[%s] at fd=%d", name_.c_str(), sockfd);

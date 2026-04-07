@@ -9,6 +9,7 @@
 #include "Callbacks.h"
 #include "TcpConnection.h"
 #include "Buffer.h"
+#include "Timer.h"
 
 #include <functional>
 #include <string>

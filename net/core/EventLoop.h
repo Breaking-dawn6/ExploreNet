@@ -3,6 +3,7 @@
 #include "nocopyable.h"
 #include "Timestamp.h"
 #include "CurrentThread.h"
+#include "Timer.h"
 
 #include <functional>
 #include <vector>
@@ -45,6 +46,11 @@ public:
     // 判断EventLoop对象是否在自己的线程里面
     bool isInLoopThread() const { return threadId_ == CurrentThread::tid(); }
 
+    TimerNodeId runAt(Timestamp time, TimerCallback cb);
+    TimerNodeId runAfter(double delay, TimerCallback cb);
+    TimerNodeId runEvery(double interval, TimerCallback cb);
+    void cancelTimer(TimerNodeId timerId);
+
 private:
     void handleRead();        // wake up
     void doPendingFunctors(); // 执行回调
@@ -59,11 +65,13 @@ private:
     Timestamp pollReturnTime_; // poller返回发生事件的channels的时间点
     std::unique_ptr<Poller> poller_;
 
-    int wakeupFd_;                           // 主要作用：当mainLoop获取一个新用户的channel,通过轮询算法选择一个subloop，通过该成员唤醒subloop处理channel
-    std::unique_ptr<Channel> wakeupChannel_; 
+    int wakeupFd_; // 主要作用：当mainLoop获取一个新用户的channel,通过轮询算法选择一个subloop，通过该成员唤醒subloop处理channel
+    std::unique_ptr<Channel> wakeupChannel_;
 
     ChannelList activeChannels_;
     Channel *currentActiveChannel_;
+
+    std::unique_ptr<Timer> timer_;
 
     std::atomic_bool callingPendingFunctors_; // 表示当前loop是否有需要执行的回调操作
     std::vector<Functor> pendingFunctors_;    // 存储loop需要执行的所有回调操作

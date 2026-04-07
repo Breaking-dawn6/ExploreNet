@@ -6,11 +6,13 @@
 class Buffer;
 class TcpConnection;
 class Timestamp;
+class TimerNode;
 
 using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
 using ConnectionCallback = std::function<void(const TcpConnectionPtr &)>;
 using CloseCallback = std::function<void(const TcpConnectionPtr &)>;
 using WriteCompleteCallback = std::function<void(const TcpConnectionPtr &)>;
+using TimerCallback = std::function<void(void)>;
 
 using MessageCallback = std::function<void(const TcpConnectionPtr &, Buffer *, Timestamp)>;
 

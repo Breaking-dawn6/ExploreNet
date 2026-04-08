@@ -2,6 +2,7 @@
 
 #include "llhttp.h"
 #include "Logger.h"
+#include "TimerNode.h"
 
 #include <string>
 #include <unordered_map>
@@ -23,8 +24,11 @@ public:
     HttpContext &operator=(const HttpContext &) = delete;
     // ~HttpContext();
     bool parse(const char *data, size_t len);
-    bool isComplete() { return parseIsComplete_; }
+    bool isComplete() const { return parseIsComplete_; }
     void reset();
+
+    void setTimerId(TimerNodeId id) { timerId_ = id; }
+    TimerNodeId timerId() const { return timerId_; }
 
     HttpRequest &request() { return request_; }
 
@@ -33,6 +37,7 @@ private:
     llhttp_settings_t settings_;
     HttpRequest request_;
     std::string headerField_; // 解析时先解析字段名，再解析字段值，因为Tcp报文可能分包，所以要先保存解析到的字段名，后续组成完成字段
+    TimerNodeId timerId_;
     bool parseIsComplete_;
 
     // 回调函数，分别负责在url、字段名、字段值解析完成时将数据填入request,在整体解析完成时更新状态

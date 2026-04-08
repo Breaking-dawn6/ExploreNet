@@ -10,51 +10,6 @@
 
 std::atomic<uint64_t> Timer::genId_{0};
 
-TimerNodeId::TimerNodeId(Timestamp expire, uint64_t id)
-    : expire_(expire),
-      id_(id)
-{
-}
-
-bool operator<(const TimerNodeId &left, const TimerNodeId &right)
-{
-    if (left.expire_ < right.expire_)
-        return true;
-    else if (left.expire_ == right.expire_ && left.id_ < right.id_)
-        return true;
-    return false;
-}
-
-TimerNode::TimerNode(Timestamp expire, uint64_t id, TimerCallback cb, double interval)
-    : TimerNodeId(expire, id),
-      interval_(interval),
-      timerCallback_(std::move(cb))
-{
-    isRepeat_ = interval_ > 0.0;
-}
-
-void TimerNode::restart(Timestamp now)
-{
-    if (isRepeat_)
-    {
-        expire_ = now + interval_;
-    }
-    else
-    {
-        expire_ = Timestamp::invalid();
-    }
-}
-
-bool TimerNodeComparator::compareImpl(Timestamp lhsTime, uint64_t lhsId,
-                                      Timestamp rhsTime, uint64_t rhsId) const
-{
-    if (lhsTime < rhsTime)
-        return true;
-    else if (lhsTime == rhsTime && lhsId < rhsId)
-        return true;
-    return false;
-}
-
 Timer::Timer(EventLoop *loop)
     : loop_(loop),
       timerfd_(timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC)),
@@ -105,6 +60,7 @@ TimerNodeId Timer::addTimer(Timestamp time, TimerCallback cb, double interval)
 
 void Timer::addTimerInLoop(TimerNode *node)
 {
+    // 用于标记此次插入的定时器是否是队列中最早触发的
     bool isEarliest = insert(node);
 
     if (isEarliest)
@@ -118,6 +74,7 @@ bool Timer::insert(TimerNode *node)
     bool isEarliest = false;
     Timestamp newNodeExpiration = node->expiration();
     auto it = timeQueue_.begin();
+    // 若队列中没有定时器，或者新插入的定时器到期时间小于队列中最早的定时器
     if (it == timeQueue_.end() || newNodeExpiration < (*it)->expiration())
     {
         isEarliest = true;
@@ -126,6 +83,7 @@ bool Timer::insert(TimerNode *node)
     return isEarliest;
 }
 
+// 重新设置timerfd的触发时间
 void resetTimerfd(int timerfd, Timestamp expiration)
 {
     itimerspec newValue;
@@ -180,6 +138,7 @@ void Timer::delTimerInLoop(TimerNodeId nodeId)
     }
     else if (isCallingExpiredTimers_)
     {
+        // 若正在执行定时器任务则将待删除的定时器加入队列
         cancelingTimers_.insert(nodeId);
     }
 }
@@ -190,8 +149,8 @@ void Timer::handleRead()
     readTimerfd(timerfd_, now);
     std::vector<TimerNode *> expired = getExpired(now);
 
-    isCallingExpiredTimers_ = true;
     cancelingTimers_.clear();
+    isCallingExpiredTimers_ = true;
     for (const TimerNode *it : expired)
     {
         it->run();
@@ -212,6 +171,7 @@ void readTimerfd(int timerfd, Timestamp now)
     }
 }
 
+// 从定时器列表中移出到期的定时器
 std::vector<TimerNode *> Timer::getExpired(Timestamp now)
 {
     std::vector<TimerNode *> expired;
@@ -225,12 +185,14 @@ std::vector<TimerNode *> Timer::getExpired(Timestamp now)
     return expired;
 }
 
+// 删除到期的非重复定时器
 void Timer::reset(const std::vector<TimerNode *> &expired, Timestamp now)
 {
     Timestamp nextExpire;
 
     for (TimerNode *it : expired)
     {
+        // 若该定时器为重复定时器且未被用户指定删除则将其重新加入队列
         if (it->isRepeat() && cancelingTimers_.find(TimerNodeId(it->expiration(), it->id())) == cancelingTimers_.end())
         {
             it->restart(now);

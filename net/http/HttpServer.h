@@ -2,6 +2,8 @@
 
 #include "TcpServer.h"
 #include "HttpRouter.h"
+#include "HttpResponse.h"
+#include "HttpContext.h"
 
 #include <memory>
 

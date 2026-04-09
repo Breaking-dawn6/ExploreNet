@@ -1,6 +1,4 @@
 #include "HttpServer.h"
-#include "HttpContext.h"
-#include "HttpResponse.h"
 
 HttpServer::HttpServer(EventLoop *loop, const InetAddress &listenAddr, std::string nameArg)
     : server_(loop, listenAddr, nameArg),

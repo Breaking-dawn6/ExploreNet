@@ -65,6 +65,14 @@ int HttpContext::header_value_complete(llhttp_t *parser, const char *data, size_
 int HttpContext::message_complete_callback(llhttp_t *parser)
 {
     HttpContext *context = static_cast<HttpContext *>(parser->data);
+
+    size_t split = context->request_.url.find('?');
+    if (split != std::string::npos)
+    {
+        context->request_.query = context->request_.url.substr(split + 1);
+        context->request_.url = context->request_.url.substr(0, split);
+    }
+
     context->parseIsComplete_ = true;
     return 0;
 }

@@ -4,11 +4,13 @@
 
 HttpRouter::HttpRouter()
 {
-    defaultHandler_ = [](HttpRequest req, HttpResponse &res)
+    defaultHandler_ = [](HttpRequest req, ResponseSender sender)
     {
+        HttpResponse res = HttpResponse();
         res.setStatusCode(HttpStatusCode::k404NotFound);
         res.setStatusMessage("Not Found");
         res.setBody("404 Not Found");
+        sender(res);
     };
 }
 void HttpRouter::GET(const std::string &url, HttpHandler handler)
@@ -30,7 +32,7 @@ bool HttpRouter::hasHandler(const std::string &method, const std::string &url)
     return false;
 }
 
-void HttpRouter::execute(HttpRequest request, HttpResponse &response)
+void HttpRouter::execute(HttpRequest request, ResponseSender responseSender)
 {
 
     auto methodIt = router_.find(request.method);
@@ -39,9 +41,9 @@ void HttpRouter::execute(HttpRequest request, HttpResponse &response)
         auto pathIt = methodIt->second.find(request.url);
         if (pathIt != methodIt->second.end())
         {
-            pathIt->second(std::move(request), response);
+            pathIt->second(std::move(request), std::move(responseSender));
             return;
         }
     }
-    defaultHandler_(std::move(request), response);
+    defaultHandler_(std::move(request), std::move(responseSender));
 }

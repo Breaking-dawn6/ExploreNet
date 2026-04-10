@@ -40,14 +40,24 @@ void HttpServer::onMessage(const TcpConnectionPtr &conn, Buffer *buf, Timestamp 
 
     if (context->isComplete())
     {
-        // if (requestAcceptor_)
-        //     requestAcceptor_(conn, std::move(context->request()));
-        HttpResponse response = HttpResponse();
-        router_.execute(std::move(context->request()), response);
+        std::weak_ptr<TcpConnection> weakConn(conn);
+        ResponseSender sender = [weakConn](HttpResponse &res)
+        {
+            std::shared_ptr<TcpConnection> sendConn = weakConn.lock();
 
-        Buffer buf;
-        response.writeToBuffer(&buf);
-        conn->send(&buf);
+            if (sendConn)
+            {
+                Buffer responseBuf;
+                res.writeToBuffer(&responseBuf);
+                sendConn->send(&responseBuf);
+            }
+            else
+            {
+                LOG_INFO("Client disconnected before task finished. Response dropped.")
+            }
+        };
+
+        router_.execute(std::move(context->request()), std::move(sender));
 
         context->reset();
     }

@@ -7,7 +7,8 @@
 class HttpResponse;
 class HttpRequest;
 
-using HttpHandler = std::function<void(HttpRequest, HttpResponse &)>;
+using ResponseSender = std::function<void(HttpResponse &)>;
+using HttpHandler = std::function<void(HttpRequest, ResponseSender)>;
 using Router = std::unordered_map<std::string, std::unordered_map<std::string, HttpHandler>>;
 
 class HttpRouter
@@ -20,7 +21,7 @@ public:
 
     bool hasHandler(const std::string &method, const std::string &url);
 
-    void execute(HttpRequest request, HttpResponse &response);
+    void execute(HttpRequest request, ResponseSender responseSender);
 
     void setDefaultHandler(HttpHandler handler) { defaultHandler_ = std::move(handler); }
 

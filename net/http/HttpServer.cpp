@@ -62,3 +62,51 @@ void HttpServer::onMessage(const TcpConnectionPtr &conn, Buffer *buf, Timestamp 
         context->reset();
     }
 }
+
+void HttpServer::SyncGet(const std::string &url, SyncHttpHandler handler)
+{
+    HttpHandler wrapper = [this, handler = std::move(handler)](HttpRequest req, ResponseSender sender)
+    {
+        Task task = [handler, req = std::move(req), sender = std::move(sender)]() mutable
+        {
+            HttpResponse res = HttpResponse();
+            handler(std::move(req), res);
+            sender(res);
+        };
+
+        if (executor_)
+        {
+            executor_(task);
+        }
+        else
+        {
+            task();
+        }
+    };
+
+    router_.GET(url, std::move(wrapper));
+}
+
+void HttpServer::SyncPost(const std::string &url, SyncHttpHandler handler)
+{
+    HttpHandler wrapper = [this, handler = std::move(handler)](HttpRequest req, ResponseSender sender)
+    {
+        Task task = [handler, req = std::move(req), sender = std::move(sender)]() mutable
+        {
+            HttpResponse res = HttpResponse();
+            handler(std::move(req), res);
+            sender(res);
+        };
+
+        if (executor_)
+        {
+            executor_(task);
+        }
+        else
+        {
+            task();
+        }
+    };
+
+    router_.POST(url, std::move(wrapper));
+}

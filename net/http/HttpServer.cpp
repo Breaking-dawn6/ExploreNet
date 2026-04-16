@@ -18,6 +18,17 @@ void HttpServer::onConnection(const TcpConnectionPtr &conn)
         // 但经过一系列的出错与排查， 发现使用make_any会导致llhttp_t内的data指向混乱（构造时指向this,但是被any拷贝之后依然指向原地址，因此会造成新的对象永远不更新状态）
         // 因此现在改为智能指针，同时删除了Context的拷贝构造与赋值方法
         conn->setContext(std::make_shared<HttpContext>());
+        if (onConnect_)
+        {
+            onConnect_(conn);
+        }
+    }
+    else
+    {
+        if (onDisconnect_)
+        {
+            onDisconnect_(conn);
+        }
     }
 }
 

@@ -8,7 +8,10 @@ class HttpResponse;
 class HttpRequest;
 
 using ResponseSender = std::function<void(HttpResponse &)>;
+
 using HttpHandler = std::function<void(HttpRequest, ResponseSender)>;
+using SyncHttpHandler = std::function<void(HttpRequest, HttpResponse &)>;
+
 using Router = std::unordered_map<std::string, std::unordered_map<std::string, HttpHandler>>;
 
 class HttpRouter

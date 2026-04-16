@@ -10,7 +10,6 @@
 
 using Task = std::function<void()>;
 using TaskExecutor = std::function<void(Task)>;
-using SyncHttpHandler = std::function<void(HttpRequest, HttpResponse &)>;
 
 class HttpServer
 {
@@ -32,6 +31,11 @@ public:
 
     void setDefaultHandler(HttpHandler handler) { router_.setDefaultHandler(std::move(handler)); }
 
+    void setThreadInitCallback(ThreadInitCallback cb) { server_.setThreadInitCallback(std::move(cb)); }
+    void setWriteCompleteCallback(WriteCompleteCallback cb) { server_.setWriteCompleteCallback(std::move(cb)); }
+    void setOnConnect(ConnectionCallback cb) { onConnect_ = std::move(cb); }
+    void setOnDisconnect(ConnectionCallback cb) { onDisconnect_ = std::move(cb); }
+
     void setExecutor(TaskExecutor executor) { executor_ = std::move(executor); }
 
     HttpRouter &getRouter() { return router_; }
@@ -41,6 +45,9 @@ private:
     std::string name_;
     HttpRouter router_;
     TaskExecutor executor_;
+
+    ConnectionCallback onConnect_;
+    ConnectionCallback onDisconnect_;
 
     void onConnection(const TcpConnectionPtr &conn);
     void onMessage(const TcpConnectionPtr &conn, Buffer *buf, Timestamp time);

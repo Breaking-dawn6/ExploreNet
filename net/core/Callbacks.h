@@ -9,6 +9,7 @@ class Timestamp;
 class TimerNode;
 
 using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
+using ThreadInitCallback = std::function<void(EventLoop *)>;
 using ConnectionCallback = std::function<void(const TcpConnectionPtr &)>;
 using CloseCallback = std::function<void(const TcpConnectionPtr &)>;
 using WriteCompleteCallback = std::function<void(const TcpConnectionPtr &)>;

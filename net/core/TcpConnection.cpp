@@ -60,7 +60,10 @@ void TcpConnection::handleRead(Timestamp receiveTime)
     if (n > 0)
     {
         // 已建立连接的用户，有可读事件发生了，调用用户传入的回调操作onMessage
-        messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);
+        if (messageCallback_)
+        {
+            messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);
+        }
     }
     else if (n == 0)
     {
@@ -116,8 +119,14 @@ void TcpConnection::handleClose()
     channel_->disableAll();
 
     TcpConnectionPtr connPtr(shared_from_this());
-    connectionCallback_(connPtr); // 执行关闭连接的回调
-    closeCallback_(connPtr);      // 关闭连接的函数 执行的是TcpServer：：removeConnection
+    if (connectionCallback_)
+    {
+        connectionCallback_(connPtr); // 执行关闭连接的回调
+    }
+    if (closeCallback_)
+    {
+        closeCallback_(connPtr); // 关闭连接的函数 执行的是TcpServer：：removeConnection
+    }
 }
 
 void TcpConnection::handleError()

@@ -7,6 +7,7 @@ class Buffer;
 class TcpConnection;
 class Timestamp;
 class TimerNode;
+class EventLoop;
 
 using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
 using ThreadInitCallback = std::function<void(EventLoop *)>;

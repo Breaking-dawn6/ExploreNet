@@ -8,6 +8,7 @@ HttpContext::HttpContext()
     settings_.on_header_field = header_field_complete;
     settings_.on_header_value = header_value_complete;
     settings_.on_message_complete = message_complete_callback;
+    settings_.on_body = body_complete;
 
     llhttp_init(&parser_, HTTP_BOTH, &settings_);
     parser_.data = this;
@@ -58,6 +59,15 @@ int HttpContext::header_value_complete(llhttp_t *parser, const char *data, size_
     HttpContext *context = static_cast<HttpContext *>(parser->data);
 
     context->request_.headers.insert({context->headerField_, std::string(data, length)});
+
+    return 0;
+}
+
+int HttpContext::body_complete(llhttp_t *parser, const char *data, size_t length)
+{
+    HttpContext* context = static_cast<HttpContext *>(parser->data);
+
+    context->request_.body.append(data,length);
 
     return 0;
 }

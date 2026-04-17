@@ -45,5 +45,6 @@ private:
     static int url_complete(llhttp_t *parser, const char *data, size_t length);
     static int header_field_complete(llhttp_t *parser, const char *data, size_t length);
     static int header_value_complete(llhttp_t *parser, const char *data, size_t length);
+    static int body_complete(llhttp_t *parser, const char *data, size_t length);
     static int message_complete_callback(llhttp_t *parser);
 };

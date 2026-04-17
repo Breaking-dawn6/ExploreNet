@@ -9,9 +9,21 @@ enum class HttpStatusCode
 {
     kUnknown = 0,
     k200OK = 200,
+    k201Created = 201,
+    k204NoContent = 204,
     k301MovedPermanently = 301,
+    k302Found = 302,
+    k304NotModified = 304,
     k400BadRequest = 400,
+    k401Unauthorized = 401,
+    k403Forbidden = 403,
     k404NotFound = 404,
+    k405MethodNotAllowed = 405,
+    k429TooManyRequests = 429,
+    k500InternalServerError = 500,
+    k502BadGateway = 502,
+    k503ServiceUnavailable = 503,
+    k504GatewayTimeout = 504,
 };
 
 class HttpResponse

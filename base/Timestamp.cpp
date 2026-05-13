@@ -12,7 +12,7 @@ Timestamp::Timestamp(double seconds) : microSecondsSinceEpoch_(round(seconds * k
 
 Timestamp Timestamp::now()
 {
-    return Timestamp(time(NULL));
+    return Timestamp(time(NULL) * kMicroSecondsPerSecond);
 }
 
 Timestamp Timestamp::systemRunTime()

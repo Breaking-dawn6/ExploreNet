@@ -15,7 +15,7 @@ rm -rf $(pwd)/build/*
 
 # 进入 build 目录，执行 cmake 生成 Makefile，并调用 make 编译
 cd $(pwd)/build &&
-    cmake .. -DBUILD_HTTP_MODULE=${BUILD_HTTP} &&
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_HTTP_MODULE=${BUILD_HTTP} &&
     make
 
 # 回到项目根目录

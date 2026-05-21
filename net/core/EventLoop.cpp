@@ -179,7 +179,13 @@ void EventLoop::doPendingFunctors()
 
 TimerNodeId EventLoop::runAt(Timestamp time, TimerCallback cb)
 {
-    return timer_->addTimer(time, std::move(cb));
+    int64_t delay = time.MicroSecondsSinceEpoch() - Timestamp::now().MicroSecondsSinceEpoch();
+    if (delay < 100)
+    {
+        delay = 100;
+    }
+    Timestamp expire(Timestamp::systemRunTime().MicroSecondsSinceEpoch() + delay);
+    return timer_->addTimer(expire, std::move(cb));
 }
 
 // 在delay秒后执行回调
